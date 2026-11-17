@@ -1,4 +1,4 @@
-import gradio as gr
+3import gradio as gr
 
 from noshows.appointment import CHOICES, LIMITS, Appointment
 from noshows.predictor import NoShowPredictor
