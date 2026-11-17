@@ -1,0 +1,14 @@
+# Caches
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Environments and secrets
+.venv/
+.env
+
+# OS files
+.DS_Store
+
+# models/ and reports/ are deliberately NOT ignored: the Space needs the model.
