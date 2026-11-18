@@ -17,7 +17,7 @@ short_description: Will this patient miss the appointment?
 
 About one booked appointment in four at Maple Physio ends in a no-show. The front desk can phone a patient the day before for $8, and a no-show that nobody phoned about costs the clinic $35. This page lets a receptionist enter a booking, see the chance of a no-show, and get a plain answer: call or don't call.
 
-Space: TODO (Oleg will send the URL)
+Space: https://huggingface.co/spaces/Oleg04/midterm-no-shows
 
 ## How to run it locally
 
@@ -33,8 +33,8 @@ gradio app.py               # or: python app.py
 | Member | GitHub | Parts owned |
 |---|---|---|
 | Oleg Shukhov | OlegShukhovHumber | `noshows/data.py`, `noshows/predictor.py`, `app.py`; repository, merging PRs, Hugging Face Space, final check, submission |
-| TODO (Person 1) | TODO | `noshows/pipeline.py`, `noshows/evaluation.py`, `tests/test_data_pipeline.py`, `tests/test_evaluation.py` |
-| TODO (Person 2) | TODO | `noshows/appointment.py`, `noshows/train.py`, `models/`, `reports/`, `tests/conftest.py`, `tests/test_appointment.py` |
+| Ana Corsi | anamatiascorsi | `noshows/pipeline.py`, `noshows/evaluation.py`, `tests/test_pipeline.py`, `tests/test_evaluation.py` |
+| Gerardo Ahuatzin | GerardoAhuatzin741 | `noshows/appointment.py`, `noshows/train.py`, `models/`, `reports/`, `tests/conftest.py`, `tests/test_appointment.py` |
 | Aditya Sharma | adityalochan | `environment.yml`, `requirements.txt`, `requirements-dev.txt`, `pyproject.toml`, `.gitignore`, `tests/test_predictor.py`, `tests/test_deployment.py`, `README.md`, final cleanup |
 
 ## Decisions
@@ -82,51 +82,50 @@ The page refuses values the model has no basis for judging. Each limit is a litt
 
 ## Model comparison
 
-TODO (numbers from Person 2's `reports/cv_results.csv`).
-
-Five-fold stratified cross-validation on the training data only (3,000 bookings):
+Five-fold stratified cross-validation on the training data only (3,000 bookings). Each cell is the mean ± the standard deviation across the five folds (from `reports/cv_results.csv`):
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |---|---|---|---|---|---|
-| Dummy (most frequent) | TODO | TODO | TODO | TODO | TODO |
-| TODO | TODO | TODO | TODO | TODO | TODO |
-| TODO | TODO | TODO | TODO | TODO | TODO |
-| TODO | TODO | TODO | TODO | TODO | TODO |
+| Dummy (most frequent) | 0.738 ± 0.000 | 0.000 ± 0.000 | 0.000 ± 0.000 | 0.000 ± 0.000 | 0.500 ± 0.000 |
+| Logistic regression | 0.756 ± 0.012 | 0.595 ± 0.067 | 0.215 ± 0.024 | 0.316 ± 0.035 | **0.713 ± 0.022** |
+| Logistic regression, `class_weight="balanced"` | 0.669 ± 0.016 | 0.415 ± 0.017 | 0.640 ± 0.027 | 0.503 ± 0.014 | 0.713 ± 0.022 |
+| Random forest | 0.748 ± 0.009 | 0.581 ± 0.083 | 0.126 ± 0.029 | 0.207 ± 0.044 | 0.695 ± 0.020 |
+| Histogram gradient boosting | 0.730 ± 0.005 | 0.470 ± 0.021 | 0.248 ± 0.020 | 0.325 ± 0.021 | 0.667 ± 0.015 |
 
-**Why accuracy misleads.** About 26% of bookings are no-shows. A model that says "everyone comes" is about 74% accurate, yet it never flags a single no-show and saves the clinic nothing. Recall, F1 and ROC-AUC show whether a model actually finds the no-shows.
+**Why accuracy misleads.** About 26% of bookings are no-shows. The Dummy says "everyone comes" and is 73.8% accurate, almost as good as the best model, yet it never flags a single no-show and saves the clinic nothing. The balanced logistic regression has the lowest accuracy of the real models but finds the most no-shows. Recall, F1 and ROC-AUC show whether a model actually finds the no-shows.
 
-**Chosen model:** TODO, and why.
+**Chosen model: logistic regression.** It has the highest mean ROC-AUC (0.713), and ROC-AUC is the right measure here because the call/no-call decision is made later by the cost threshold, so what matters is how well the model ranks risky bookings above safe ones. The two logistic regressions rank equally well (same ROC-AUC); `class_weight` only shifts the probabilities, and the threshold takes care of that. The tree models did worse on this small, mostly linear table, and logistic regression is also the simplest to explain to the front desk.
 
-**Tuning:** TODO (the grid, the scoring, and an honest sentence on whether tuning beat the untuned model by more than the fold-to-fold spread).
+**Tuning.** `GridSearchCV` over `C` (0.01, 0.1, 1, 10) and `class_weight` (None, balanced), 8 combinations, scored by ROC-AUC with the same five folds. The best setting was `C=0.1`, `class_weight=None`, with ROC-AUC 0.7131 against 0.7129 untuned. That gain of 0.0002 is far smaller than the fold-to-fold spread of 0.022, so tuning did not really beat the untuned model.
 
 ## Result
 
-TODO (numbers from Person 2's `models/model_info.json`).
-
-Test set of 1,000 bookings, scored once, with the threshold chosen from out-of-fold training probabilities:
+Test set of 1,000 bookings, scored once, with the threshold chosen from out-of-fold training probabilities (from `models/model_info.json`):
 
 | Metric | Value |
 |---|---|
-| Threshold | TODO |
-| Accuracy | TODO |
-| Precision | TODO |
-| Recall | TODO |
-| F1 | TODO |
-| ROC-AUC | TODO |
+| Threshold | 0.21 |
+| Accuracy | 0.625 |
+| Precision | 0.394 |
+| Recall | 0.805 |
+| F1 | 0.529 |
+| ROC-AUC | 0.761 |
+
+The threshold is low because a missed no-show ($35) costs over four times as much as a call ($8), so it pays to call anyone with more than about a one-in-five chance. The model flags 535 of the 1,000 bookings. It catches 211 of the 262 no-shows and misses 51, and 324 of the calls go to patients who would have come anyway.
 
 | Policy | Total cost on the test set |
 |---|---|
-| Call nobody | TODO |
-| Call everybody | TODO |
-| Use the model | TODO |
+| Call nobody | $9,170 (262 no-shows × $35) |
+| Call everybody | $8,000 (1,000 calls × $8) |
+| Use the model | **$6,065** (535 calls × $8 + 51 missed × $35) |
 
-TODO: one sentence on how far the saving can be trusted with 1,000 test bookings.
+The model beats both: it saves $1,935 against calling everybody and $3,105 against calling nobody, about $1.94 and $3.11 per booking. With only 1,000 test bookings these figures are rough. Resampling the test set (2,000 bootstrap samples) puts the saving against calling everybody between about $1,450 and $2,400 (95% range). So the model is clearly cheaper than both policies, but the exact dollar amount should not be quoted too precisely.
 
-**Leakage check.** Honest cross-validated ROC-AUC: TODO. With `fee_charged` added: TODO. The larger number cannot be trusted, because `fee_charged` is only known after the visit, so the model is reading the answer rather than predicting it.
+**Leakage check.** Honest cross-validated ROC-AUC: 0.713. With `fee_charged` added: 0.923. The larger number cannot be trusted, because `fee_charged` is only known after the visit, so the model is reading the answer rather than predicting it.
 
 ## Tests
 
-The tests run without a network and cover:
+There are 27 test functions (49 cases once the parametrized ones are expanded). They run without a network and cover:
 
 - **Data and pipeline:** the table is reproducible, the excluded columns are not features, the split is stratified 75/25, and a missing `distance_km` is handled.
 - **Cost rule:** the cost function against a hand-worked example, the cases where calling nobody or calling everybody is cheapest, and the threshold choice at both extremes.
