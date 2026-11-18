@@ -1,0 +1,36 @@
+{
+  "chosen_model": "logreg",
+  "threshold": 0.21,
+  "tuning": {
+    "untuned_cv_roc_auc_mean": 0.7129,
+    "untuned_cv_roc_auc_std": 0.0222,
+    "tuned_cv_roc_auc": 0.7131,
+    "beats_untuned_by_more_than_std": false,
+    "best_params": {
+      "model__C": 0.1,
+      "model__class_weight": null
+    }
+  },
+  "test_results": {
+    "accuracy": 0.625,
+    "precision": 0.394392523364486,
+    "recall": 0.8053435114503816,
+    "f1": 0.5294855708908407,
+    "roc_auc": 0.7606539233331265,
+    "confusion_matrix": {
+      "tn": 414,
+      "fp": 324,
+      "fn": 51,
+      "tp": 211
+    },
+    "costs": {
+      "call_nobody": 9170.0,
+      "call_everybody": 8000.0,
+      "model": 6065.0
+    }
+  },
+  "leakage": {
+    "honest_cv_roc_auc": 0.7131,
+    "with_fee_charged_cv_roc_auc": 0.9233
+  }
+}
