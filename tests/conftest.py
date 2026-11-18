@@ -41,6 +41,7 @@ RISKY_BOOKING = dict(
     distance_km=40.0,
 )
 
+
 @pytest.fixture
 def valid_booking():
     return dict(VALID_BOOKING)

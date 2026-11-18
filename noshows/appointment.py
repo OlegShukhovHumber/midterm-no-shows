@@ -10,11 +10,11 @@ import pandas as pd
 from noshows.pipeline import CATEGORICAL_FEATURES, NUMERIC_FEATURES
 
 LIMITS = {
-    "lead_days": (0, 120),  
-    "age": (12, 110),  
-    "prior_no_shows": (0, 30),  
-    "hour": (8, 17),  
-    "distance_km": (0.1, 150),  
+    "lead_days": (0, 120),
+    "age": (12, 110),
+    "prior_no_shows": (0, 30),
+    "hour": (8, 17),
+    "distance_km": (0.1, 150),
 }
 
 CHOICES = {
@@ -28,6 +28,7 @@ CHOICES = {
 WHOLE_NUMBER_FIELDS = ("lead_days", "age", "prior_no_shows", "hour")
 TEXT_FIELDS = ("weekday", "booking", "insurance", "treatment")
 
+
 def _finite_number(field: str, value) -> float:
     """Return value as a float, or raise if it is missing, a bool, NaN or infinite."""
     if value is None:
@@ -39,6 +40,7 @@ def _finite_number(field: str, value) -> float:
         raise ValueError(f"{field} must be a number.")
     return number
 
+
 def _whole_number(field: str, value) -> int:
     """Accept 5 or 5.0, refuse 5.5."""
     number = _finite_number(field, value)
@@ -46,19 +48,21 @@ def _whole_number(field: str, value) -> int:
         raise ValueError(f"{field} must be a whole number.")
     return int(number)
 
+
 def _check_range(field: str, number: float) -> None:
     low, high = LIMITS[field]
     if not low <= number <= high:
         raise ValueError(f"{field} must be between {low} and {high}.")
+
 
 def _one_of(field: str, value, allowed: tuple) -> None:
     if value not in allowed:
         options = ", ".join(str(option) for option in allowed)
         raise ValueError(f"{field} must be one of: {options}.")
 
+
 @dataclass(frozen=True)
 class Appointment:
-    
     lead_days: int
     age: int
     prior_no_shows: int
