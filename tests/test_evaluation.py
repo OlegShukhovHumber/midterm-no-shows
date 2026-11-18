@@ -1,18 +1,20 @@
 import numpy as np
 import pytest
+
 from noshows.evaluation import (
-    total_cost,
-    flag,
-    choose_threshold,
-    summary,
     THERESHOLDS,
+    choose_threshold,
+    flag,
     policy_costs,
+    summary,
+    total_cost,
 )
+
 
 def test_total_cost_hand():
     y_true = np.array([1, 0, 1, 1, 0])
-    flagged = np.array([1, 1, 0, 0, 0]) # 2 calls, 3 missed= 2*8 + 3*35 = 16 + 105 = 121
-    assert total_cost(y_true, flagged, call_cost=8, miss_cost=35) == 121
+    flagged = np.array([1, 1, 0, 0, 0])  # 2 calls, 3 missed= 2*8 + 2*35 = 16 + 70 = 86
+    assert total_cost(y_true, flagged, call_cost=8, miss_cost=35) == float(86)
 
 
 @pytest.mark.parametrize(
@@ -31,13 +33,16 @@ def test_calling_nobody_or_everybody_can_be_cheapest(
     assert costs["call_everybody"] == everybody
     assert costs["call_" + cheaper] == min(nobody, everybody)
 
+
 def test_flag_greater_equal():
     assert np.array_equal(flag([0.1, 0.5, 0.9], 0.5), [False, True, True])
+
 
 def test_threshold_values():
     assert THERESHOLDS[0] == 0.05
     assert THERESHOLDS[-1] == 0.95
     assert len(THERESHOLDS) == 91
+
 
 def test_summary():
     y_true = np.array([1, 0, 1, 1, 0])
