@@ -2,12 +2,21 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
-from noshows.pipeline import build_pipeline, split_data, NUMERIC_FEATURES, CATEGORICAL_FEATURES, TARGET, EXCLUDED_FEATURES
 from noshows.data import make_appointments
+from noshows.pipeline import (
+    CATEGORICAL_FEATURES,
+    EXCLUDED_FEATURES,
+    NUMERIC_FEATURES,
+    TARGET,
+    build_pipeline,
+    split_data,
+)
+
 
 def test_data_is_reproducible():
     """Check that the data split is reproducible."""
     pd.testing.assert_frame_equal(make_appointments(), make_appointments())
+
 
 def test_excluded_features_are_not_included():
     """Check that excluded features are not in the training data."""
@@ -16,6 +25,7 @@ def test_excluded_features_are_not_included():
     for feature in EXCLUDED_FEATURES:
         assert feature not in X_train.columns
         assert feature not in X_test.columns
+
 
 def test_split_is_stratified_and_the_right_size():
     frame = make_appointments()
@@ -27,6 +37,7 @@ def test_split_is_stratified_and_the_right_size():
     assert abs(y_train.mean() - overall) < 0.01
     assert abs(y_test.mean() - overall) < 0.01
 
+
 def test_pipeline_missing_distance_values():
     """Check that the pipeline can handle missing distance values."""
     frame = make_appointments()
@@ -36,7 +47,7 @@ def test_pipeline_missing_distance_values():
     pipeline.fit(X_train, y_train)
     predictions = pipeline.predict(X_test)
     assert len(predictions) == len(y_test)
-    row = X_test.iloc[0:1]
-    row['distance_km'] = np.nan
+    row = X_test.iloc[[0]].copy()
+    row["distance_km"] = np.nan
     prediction_with_missing_distance = pipeline.predict(row)
     assert prediction_with_missing_distance in [0, 1]
