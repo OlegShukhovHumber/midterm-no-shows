@@ -19,6 +19,8 @@ About one booked appointment in four at Maple Physio ends in a no-show. The fron
 
 Space: https://huggingface.co/spaces/Oleg04/midterm-no-shows
 
+Demo recording: [watch the demo](https://humberital-my.sharepoint.com/:v:/g/personal/n10041441_humber_ca/IQBs7uJE1DqmRJoK16Hj7ZWOAUu7nepiC5MWuD6_lZwYcik?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=DTntlV)
+
 ## How to run it locally
 
 ```bash
